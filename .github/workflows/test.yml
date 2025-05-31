@@ -52,10 +52,10 @@ jobs:
 
       - name: 🔧 Run migrations
         run: |
-          source ../venv/bin/activate
+          source ./venv/bin/activate
           python manage.py migrate
 
       - name: ✅ Run tests
         run: |
-          source ../venv/bin/activate
+          source ./venv/bin/activate
           python manage.py test

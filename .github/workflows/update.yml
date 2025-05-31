@@ -32,5 +32,5 @@ jobs:
 
       - name: ♻️ Zappa Update
         run: |
-          source ../venv/bin/activate
+          source ./venv/bin/activate
           zappa update dev
