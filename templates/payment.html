@@ -1,0 +1,108 @@
+<!-- templates/payment.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Stripe Payment</title>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    #card-element {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+    .btn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #6772e5;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    #invoice-id {
+      margin-top: 10px;
+      padding: 8px;
+      width: 100%;
+      max-width: 300px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Stripe Payment</h2>
+  <form id="payment-form">
+    <label for="invoice-id">Invoice ID:</label><br />
+    <input
+      type="text"
+      id="invoice-id"
+      name="invoice_id"
+      placeholder="Enter invoice ID"
+      required
+    />
+    <div id="card-element"><!-- Stripe injects card field here --></div>
+    <button type="submit" class="btn">Pay</button>
+    <div id="payment-message"></div>
+  </form>
+
+  <script>
+    const stripe = Stripe("{{ stripe_public_key }}");  // passed from Django view
+    const elements = stripe.elements();
+    const cardElement = elements.create("card");
+    cardElement.mount("#card-element");
+
+    const form = document.getElementById("payment-form");
+    const message = document.getElementById("payment-message");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      message.textContent = "";
+
+      // Get invoice ID from input field
+      const invoiceId = document.getElementById("invoice-id").value.trim();
+
+      if (!invoiceId) {
+        message.textContent = "Please enter a valid invoice ID.";
+        return;
+      }
+
+      const response = await fetch("/api/create-payment-intent/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoice_id: invoiceId })
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        message.textContent = "Error: " + data.error;
+        return;
+      }
+
+      const result = await stripe.confirmCardPayment(data.client_secret, {
+        payment_method: {
+          card: cardElement
+        }
+      });
+
+      if (result.error) {
+        message.textContent = "Payment failed: " + result.error.message;
+      } else if (result.paymentIntent && result.paymentIntent.status === "succeeded") {
+        // Step 3: Notify backend of payment success
+        const successResponse = await fetch("/api/payment-success/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ invoice_id: invoiceId })
+        });
+  
+        const successData = await successResponse.json();
+  
+        if (successResponse.ok) {
+          message.textContent = "✅ Payment successful and invoice updated!";
+        } else {
+          message.textContent = "Payment successful, but error updating invoice: " + successData.detail;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

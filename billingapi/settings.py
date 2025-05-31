@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-w094l3v@j%t&eq+hmnj3pou63u)fs8rs=%jkhh322c8zk@hkm5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -58,7 +58,7 @@ ROOT_URLCONF = 'billingapi.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

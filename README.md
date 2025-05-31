@@ -12,7 +12,7 @@ This is a backend system built with Django and Celery to handle user subscriptio
 - Invoice lifecycle tracking: `pending`, `paid`, `overdue`.
 - Admin-only access for managing plans.
 - API endpoints for subscription and invoice payment.
-- Mock payment integration (Stripe-like).
+- payment integration (Stripe).
 - Periodic tasks for:
   - Generating invoices.
   - Marking overdue invoices.
@@ -28,7 +28,7 @@ This is a backend system built with Django and Celery to handle user subscriptio
 - Celery
 - Redis (as broker)
 - SQLite or Postgres
-- Stripe (mocked)
+- Stripe
 
 ---
 
@@ -99,7 +99,7 @@ POST `/api/token/refresh/` – Refresh token
 
 ### Plans (staff Only)
 GET `/plans/` All autheniticated user  
-POST `/plans/`  
+POST `/plans/`  Create a plan , only staff access
 PUT `/plans/{id}/`  
 DELETE `/plans/{id}/`  
 
@@ -113,15 +113,39 @@ POST `/subscriptions/{id}/unsubscribe/`
 ### Invoices
 For staff it will list all invoices, for other users it will list only theirs  
 GET `/invoices/` – Supports ?status=pending|paid|overdue  
-POST `/invoices/{id}/pay/`  
 
-## Stripe Integration (Mock) - TO-DO Real stripe
-Stripe integration is mocked using a simple print statement in the payment endpoint. I will implement later.
+### Payment
+
+GET `/api/pay/` Opens payment page , enter invoice id and card details
+POST `/api/create-payment-intent/` Create stripe payment for the invoice
+POST `/api/payment-success/` Mark the invoice paid
+
+
+## Stripe Integration
+Stripe payment integration is implemented using Stripe.js for card handling and Django backend for creating payment intents and confirming payments.
+
+### Stripe Payment Flow
+
+1. User enters the `invoice_id` and card details on the payment page (`/templates/payment.html`). Visit - `/api/pay/`
+2. A POST request is sent to:
+   - `/api/create-payment-intent/` – to create a Stripe PaymentIntent using the invoice amount.
+3. Stripe processes the card, and on success:
+   - A POST request is sent to `/api/payment-success/` with the `invoice_id`.
+   - The invoice status is updated to `paid`.
+
+Make sure to set your `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY` in environment variables before starting the server.
+We can store these key in aws ssm as well for better security and maintainability.
+
+#### Test data for stripe
+
+card number success - 4242 4242 4242 4242
+card number declined - 4000 0000 0000 9995
+
 
 ## Bonus Functionality
 
 * Reminder email (console print)
-* Stripe integration — mocked via a print statement
+* Stripe integration
 * Admin-only access to view all invoices/subscriptions
 * Added query parm to filter using status for invoice and subscriptions
 * Added automated tests in github actions

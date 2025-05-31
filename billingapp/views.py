@@ -4,12 +4,15 @@ Handles CRUD operations, custom actions (unsubscribe, pay), and permission logic
 """
 
 # pylint:disable=E1101,W0613, W0718
+import os
+import stripe
+from django.shortcuts import render, get_object_or_404
+from django.db import DatabaseError
 from rest_framework import status, viewsets, serializers
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from django.db import DatabaseError
-
 from .models import User, Plan, Subscription, Invoice
 from .serializers import (
     UserSerializer,
@@ -18,6 +21,15 @@ from .serializers import (
     InvoiceSerializer,
 )
 from .permissions import IsAdminUser, IsOwnerOrAdmin
+
+
+def payment_page(request):
+    """Mock payment page for testing"""
+    return render(
+        request,
+        "payment.html",
+        {"stripe_public_key": os.environ.get("STRIPE_PUBLISHABLE_KEY")},
+    )
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -184,42 +196,83 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    @action(detail=True, methods=["post"], url_path="pay")
-    def pay_invoice(self, request, pk=None):
-        """
-        Custom action to pay an invoice via /invoices/{id}/pay/
-        Mock payment flow only.
-        """
-        try:
-            invoice = self.get_object()
+class CreatePaymentIntentView(APIView):
+    """Stripe payment"""
 
-            if invoice.status == "paid":
+    # permission_classes = [IsAuthenticated] for simple implementation for UI i just commented
+    def post(self, request):
+        """Stripe payment create"""
+        try:
+            api_key = os.environ.get(
+                "STRIPE_SECRET_KEY"
+            )  # it needs to be in DB or some secret store like aws ssm
+            if not api_key:
+                raise ValueError("Stripe api key not found")
+            stripe.api_key = api_key
+            invoice_id = request.data.get("invoice_id")
+            if not invoice_id:
                 return Response(
-                    {"detail": "Invoice already paid."},
+                    {"detail": "Invoice ID is required."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Mock payment
-            print(f"Mock payment for Invoice #{invoice.id}, amount: {invoice.amount}")
+            invoice = get_object_or_404(Invoice.objects.exclude(status="paid"), id=invoice_id)
+            amount_in_paisa = int(invoice.amount * 100)  # Convert to paisa/cents
 
+            # Create the payment intent
+            intent = stripe.PaymentIntent.create(
+                amount=int(amount_in_paisa),
+                currency="inr",
+                payment_method_types=["card"],
+                metadata={"invoice_id": invoice.id},
+            )
+
+            return Response(
+                {"client_secret": intent.client_secret, "payment_intent_id": intent.id},
+                status=status.HTTP_200_OK,
+            )
+
+        except stripe.error.StripeError as e:
+            # Stripe-specific errors
+            return Response(
+                {"error": str(e.user_message or str(e))},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            # General exception fallback
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class PaymentSuccesstView(APIView):
+    """Stripe payment"""
+
+    # permission_classes = [IsAuthenticated] for simple implementation for UI i just commented
+    def post(self, request):
+        """Payment success"""
+        try:
+
+            invoice_id = request.data.get("invoice_id")
+            if not invoice_id:
+                return Response(
+                    {"detail": "Invoice ID is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            invoice = get_object_or_404(Invoice.objects.exclude(status="paid"), id=invoice_id)
+            # Update invoice status to 'paid'
             invoice.status = "paid"
             invoice.save()
 
             return Response(
-                {"detail": "Payment successful."}, status=status.HTTP_200_OK
+                {"detail": f"Invoice {invoice_id} marked as paid."},
+                status=status.HTTP_200_OK,
             )
 
-        except Invoice.DoesNotExist:
+
+        except Exception as e:
+            # General exception fallback
             return Response(
-                {"detail": "Invoice not found."}, status=status.HTTP_404_NOT_FOUND
-            )
-        except DatabaseError:
-            return Response(
-                {"detail": "A database error occurred."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-        except Exception as ex:
-            return Response(
-                {"detail": f"Unexpected error: {str(ex)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
