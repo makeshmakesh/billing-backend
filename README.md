@@ -94,26 +94,26 @@ Only staff (is_staff=True) can:
 POST `/api/users/`
 
 ### Auth
-POST `/api/token/` – Login and get JWT
-POST `/api/token/refresh/` – Refresh token
+POST `/api/token/` – Login and get JWT  
+POST `/api/token/refresh/` – Refresh token  
 
 ### Plans (staff Only)
-GET `/plans/` All autheniticated user
-POST `/plans/`
-PUT `/plans/{id}/`
-DELETE `/plans/{id}/`
+GET `/plans/` All autheniticated user  
+POST `/plans/`  
+PUT `/plans/{id}/`  
+DELETE `/plans/{id}/`  
 
 ### Subscriptions
 
 For staff it will list all subscriptions, for other users it will list only theirs
-GET `/subscriptions/` - Supports ?status=active|cancelled|expired
-POST `/subscriptions/`
-POST `/subscriptions/{id}/unsubscribe/`
+GET `/subscriptions/` - Supports ?status=active|cancelled|expired  
+POST `/subscriptions/`  
+POST `/subscriptions/{id}/unsubscribe/`  
 
 ### Invoices
-For staff it will list all invoices, for other users it will list only theirs
-GET `/invoices/` – Supports ?status=pending|paid|overdue
-POST `/invoices/{id}/pay/`
+For staff it will list all invoices, for other users it will list only theirs  
+GET `/invoices/` – Supports ?status=pending|paid|overdue  
+POST `/invoices/{id}/pay/`  
 
 ## Stripe Integration (Mock) - TO-DO Real stripe
 Stripe integration is mocked using a simple print statement in the payment endpoint. I will implement later.
