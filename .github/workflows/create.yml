@@ -1,0 +1,37 @@
+name: Zappa Deploy (create)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-1
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v3
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: 📦 Create venv, activate, and install deps
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+
+          pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+          pip install zappa
+
+      - name: 🚀 Zappa Initial Deploy
+        working-directory: billingapi
+        run: |
+          source ../venv/bin/activate
+          zappa deploy dev

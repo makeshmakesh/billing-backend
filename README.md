@@ -124,3 +124,4 @@ Stripe integration is mocked using a simple print statement in the payment endpo
 * Stripe integration — mocked via a print statement
 * Admin-only access to view all invoices/subscriptions
 * Added query parm to filter using status for invoice and subscriptions
+* Added automated tests in github actions
