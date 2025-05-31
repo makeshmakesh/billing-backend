@@ -105,7 +105,7 @@ DELETE `/plans/{id}/`
 
 ### Subscriptions
 
-For staff it will list all subscriptions, for other users it will list only theirs
+For staff it will list all subscriptions, for other users it will list only theirs  
 GET `/subscriptions/` - Supports ?status=active|cancelled|expired  
 POST `/subscriptions/`  
 POST `/subscriptions/{id}/unsubscribe/`  
