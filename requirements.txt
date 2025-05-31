@@ -1,0 +1,7 @@
+Django==5.2.1
+djangorestframework==3.16.0
+psycopg[binary]
+djangorestframework-simplejwt
+celery
+redis
+django-celery-beat
