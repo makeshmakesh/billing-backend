@@ -44,8 +44,12 @@ class PlanViewSet(viewsets.ModelViewSet):
 
     queryset = Plan.objects.all()
     serializer_class = PlanSerializer
-    permission_classes = [IsAdminUser]
     http_method_names = ["get", "post", "put", "patch", "delete"]
+
+    def get_permissions(self):
+        if self.request.method in ["GET", "HEAD", "OPTIONS"]:
+            return [IsAuthenticated()]
+        return [IsAdminUser()]
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):

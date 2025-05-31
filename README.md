@@ -98,7 +98,7 @@ POST `/api/token/` – Login and get JWT
 POST `/api/token/refresh/` – Refresh token
 
 ### Plans (staff Only)
-GET `/plans/`
+GET `/plans/` All autheniticated user
 POST `/plans/`
 PUT `/plans/{id}/`
 DELETE `/plans/{id}/`
