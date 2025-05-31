@@ -11,7 +11,7 @@
       ],
       "project_name": "billingapi",
       "runtime": "python3.12",
-      "s3_bucket": "zappa-billingapi-rhs0mx92b",
+      "s3_bucket": "billingapi-rhs0mx92b",
       "slim_handler": true
     }
   }
