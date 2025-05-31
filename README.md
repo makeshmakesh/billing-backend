@@ -116,9 +116,9 @@ GET `/invoices/` – Supports ?status=pending|paid|overdue
 
 ### Payment
 
-GET `/api/pay/` Opens payment page , enter invoice id and card details
-POST `/api/create-payment-intent/` Create stripe payment for the invoice
-POST `/api/payment-success/` Mark the invoice paid
+GET `/api/pay/` Opens payment page , enter invoice id and card details  
+POST `/api/create-payment-intent/` Create stripe payment for the invoice  
+POST `/api/payment-success/` Mark the invoice paid  
 
 
 ## Stripe Integration
