@@ -31,7 +31,6 @@ jobs:
           pip install zappa
 
       - name: ⚙️ Run Zappa Migrate
-        working-directory: billingapi
         run: |
           source ../venv/bin/activate
           zappa manage dev "migrate"

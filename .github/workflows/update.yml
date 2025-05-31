@@ -31,7 +31,6 @@ jobs:
           pip install zappa
 
       - name: ♻️ Zappa Update
-        working-directory: billingapi
         run: |
           source ../venv/bin/activate
           zappa update dev

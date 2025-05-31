@@ -31,7 +31,6 @@ jobs:
           pip install zappa
 
       - name: 🚀 Zappa Initial Deploy
-        working-directory: billingapi
         run: |
           source ../venv/bin/activate
           zappa deploy dev

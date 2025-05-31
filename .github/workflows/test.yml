@@ -51,13 +51,11 @@ jobs:
           pip install -r requirements.txt
 
       - name: 🔧 Run migrations
-        working-directory: billingapi
         run: |
           source ../venv/bin/activate
           python manage.py migrate
 
       - name: ✅ Run tests
-        working-directory: billingapi
         run: |
           source ../venv/bin/activate
           python manage.py test
