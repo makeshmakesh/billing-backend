@@ -23,7 +23,7 @@ This is a backend system built with Django and Celery to handle user subscriptio
 ## 🛠 Tech Stack
 
 - Python 3.12+
-- Django 4.x
+- Django 5.2
 - Django REST Framework
 - Celery
 - Redis (as broker)
